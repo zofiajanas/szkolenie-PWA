@@ -1,9 +1,10 @@
-const STATIC_CACHE_VER = 'static-4';
+const STATIC_CACHE_VER = 'static-5';
 const DYNAMIC_CACHE_VER = 'dynamic';
 
 const cacheList = [
   '/',
   '/index.html',
+  '/offline.html',
   '/src/js/app.js',
   '/src/js/feed.js',
   '/src/js/material.min.js',
@@ -48,13 +49,18 @@ self.addEventListener('fetch', event => {
       else {
         return fetch(event.request)
           .then(res => {
+            // pobieranie jeśli skrypt wewnątrz ma odnośnić do kolejnych skryptów
             return caches.open(DYNAMIC_CACHE_VER).then(cache => {
-              // cache.add(event.request.url);
+              cache.add(event.request.url);
               return res;
             });
           })
           .catch(err => {
-            console.log(err);
+            return caches.open(STATIC_CACHE_VER).then(cache => {
+              if (event.request.headers.get('accept').includes('text/html')) {
+                return cache.match('/offline.html');
+              }
+            });
           });
       }
     })

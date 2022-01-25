@@ -32,15 +32,15 @@ closeCreatePostModalButton.addEventListener('click', closeCreatePostModal);
 
 const USER_REQUESTED = 'user-reqested';
 
-const onSaveButtonClicked = event => {
-  console.log('click');
+// const onSaveButtonClicked = event => {
+//   console.log('click');
 
-  if ('caches' in window) {
-    caches.open(USER_REQUESTED).then(cache => {
-      cache.addAll(['https://httpbin.org/get', '/src/images/sf-boat.jpg']);
-    });
-  }
-};
+//   if ('caches' in window) {
+//     caches.open(USER_REQUESTED).then(cache => {
+//       cache.addAll(['https://httpbin.org/get', '/src/images/sf-boat.jpg']);
+//     });
+//   }
+// };
 
 function createCard() {
   var cardWrapper = document.createElement('div');
@@ -61,10 +61,10 @@ function createCard() {
   cardSupportingText.textContent = 'In San Francisco';
   cardSupportingText.style.textAlign = 'center';
 
-  const cardSaveButton = document.createElement('button');
-  cardSaveButton.innerText = 'save';
-  cardSupportingText.appendChild(cardSaveButton);
-  cardSaveButton.addEventListener('click', onSaveButtonClicked);
+  // const cardSaveButton = document.createElement('button');
+  // cardSaveButton.innerText = 'save';
+  // cardSupportingText.appendChild(cardSaveButton);
+  // cardSaveButton.addEventListener('click', onSaveButtonClicked);
 
   cardWrapper.appendChild(cardSupportingText);
   componentHandler.upgradeElement(cardWrapper);
