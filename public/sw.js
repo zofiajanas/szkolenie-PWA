@@ -1,4 +1,4 @@
-const STATIC_CACHE_VER = 'static-2';
+const STATIC_CACHE_VER = 'static-4';
 const DYNAMIC_CACHE_VER = 'dynamic';
 
 const cacheList = [
@@ -45,17 +45,18 @@ self.addEventListener('fetch', event => {
   event.respondWith(
     caches.match(event.request).then(response => {
       if (response) return response;
-      else
-        fetch(event.request)
+      else {
+        return fetch(event.request)
           .then(res => {
             return caches.open(DYNAMIC_CACHE_VER).then(cache => {
-              cache.add(event.request.url);
+              // cache.add(event.request.url);
               return res;
             });
           })
           .catch(err => {
             console.log(err);
           });
+      }
     })
   );
 });
