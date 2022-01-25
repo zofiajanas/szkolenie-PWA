@@ -42,6 +42,12 @@ const USER_REQUESTED = 'user-reqested';
 //   }
 // };
 
+const clearCards = () => {
+  while (sharedMomentsArea.hasChildNodes()) {
+    sharedMomentsArea.removeChild(sharedMomentsArea.lastChild);
+  }
+};
+
 function createCard() {
   var cardWrapper = document.createElement('div');
   cardWrapper.className = 'shared-moment-card mdl-card mdl-shadow--2dp';
@@ -71,10 +77,33 @@ function createCard() {
   sharedMomentsArea.appendChild(cardWrapper);
 }
 
-fetch('https://httpbin.org/get')
+const url = 'https://httpbin.org/get';
+let networkDataRecived = false;
+
+fetch(url)
   .then(function (res) {
     return res.json();
   })
   .then(function (data) {
+    console.log('dane z fetcha');
+    networkDataRecived = true;
+    clearCards();
     createCard();
   });
+
+if ('caches' in window) {
+  caches
+    .match(url)
+    .then(response => {
+      if (response) {
+        return response;
+      }
+    })
+    .then(data => {
+      console.log('dane z cache');
+      if (!networkDataRecived) {
+        clearCards();
+        createCard();
+      }
+    });
+}
