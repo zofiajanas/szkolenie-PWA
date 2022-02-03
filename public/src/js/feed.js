@@ -48,23 +48,23 @@ const clearCards = () => {
   }
 };
 
-function createCard() {
+function createCard(data) {
   var cardWrapper = document.createElement('div');
   cardWrapper.className = 'shared-moment-card mdl-card mdl-shadow--2dp';
   var cardTitle = document.createElement('div');
   cardTitle.className = 'mdl-card__title';
-  cardTitle.style.backgroundImage = 'url("/src/images/sf-boat.jpg")';
+  cardTitle.style.backgroundImage = `url("${data.image}")`;
   cardTitle.style.backgroundSize = 'cover';
   cardTitle.style.height = '180px';
   cardWrapper.appendChild(cardTitle);
   var cardTitleTextElement = document.createElement('h2');
   cardTitleTextElement.className = 'mdl-card__title-text';
-  cardTitleTextElement.textContent = 'San Francisco Trip';
+  cardTitleTextElement.textContent = data.title;
   cardTitleTextElement.style.color = 'white';
   cardTitle.appendChild(cardTitleTextElement);
   var cardSupportingText = document.createElement('div');
   cardSupportingText.className = 'mdl-card__supporting-text';
-  cardSupportingText.textContent = 'In San Francisco';
+  cardSupportingText.textContent = data.location;
   cardSupportingText.style.textAlign = 'center';
 
   // const cardSaveButton = document.createElement('button');
@@ -77,33 +77,40 @@ function createCard() {
   sharedMomentsArea.appendChild(cardWrapper);
 }
 
+const updateUI = data => {
+  clearCards();
+
+  data.forEach(el => {
+    createCard(el);
+  });
+};
+
 const url = 'https://httpbin.org/get';
+const dataUrl =
+  'https://pwa-course-1b96b-default-rtdb.europe-west1.firebasedatabase.app/posts.json';
 let networkDataRecived = false;
 
-fetch(url)
+fetch(dataUrl)
   .then(function (res) {
     return res.json();
   })
   .then(function (data) {
     console.log('dane z fetcha');
     networkDataRecived = true;
-    clearCards();
-    createCard();
+
+    const dataArray = [];
+    for (let key in data) {
+      dataArray.push(data[key]);
+    }
+
+    updateUI(dataArray);
   });
 
-if ('caches' in window) {
-  caches
-    .match(url)
-    .then(response => {
-      if (response) {
-        return response;
-      }
-    })
-    .then(data => {
-      console.log('dane z cache');
-      if (!networkDataRecived) {
-        clearCards();
-        createCard();
-      }
-    });
+if ('indexedDB' in window) {
+  readAllData('posts').then(data => {
+    if (!networkDataRecived) {
+      console.log('from index', data);
+      updateUI(data);
+    }
+  });
 }

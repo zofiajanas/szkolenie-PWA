@@ -1,5 +1,8 @@
-const STATIC_CACHE_VER = 'static-8';
-const DYNAMIC_CACHE_VER = 'dynamic';
+importScripts('/src/js/idb.js');
+importScripts('/src/js/utility.js');
+
+const STATIC_CACHE_VER = 'static-9';
+const DYNAMIC_CACHE_VER = 'dynamic-4';
 
 const cacheList = [
   '/',
@@ -7,6 +10,7 @@ const cacheList = [
   '/offline.html',
   '/src/js/app.js',
   '/src/js/feed.js',
+  '/src/js/idb.js',
   '/src/js/material.min.js',
   '/src/css/app.css',
   '/src/css/feed.css',
@@ -42,16 +46,25 @@ self.addEventListener('activate', event => {
 
 self.addEventListener('fetch', event => {
   // console.log('[SW] - fetch', event);
-  const url = 'https://httpbin.org/get';
+  const url = 'https://pwa-course-1b96b-default-rtdb.europe-west1.firebasedatabase.app/posts.json';
 
   // jeśli nasz url zawiera link
   if (event.request.url.indexOf(url) > -1) {
     event.respondWith(
-      caches.open(DYNAMIC_CACHE_VER).then(cache => {
-        return fetch(event.request).then(res => {
-          cache.put(event.request, res.clone());
-          return res;
-        });
+      fetch(event.request).then(res => {
+        const cloneRes = res.clone();
+
+        clearAllData('posts')
+          .then(() => {
+            return cloneRes.json();
+          })
+          .then(data => {
+            for (let key in data) {
+              writeData('posts', data[key]);
+            }
+          });
+
+        return res;
       })
     );
   } else {
@@ -63,7 +76,7 @@ self.addEventListener('fetch', event => {
             .then(res => {
               // pobieranie jeśli skrypt wewnątrz ma odnośnić do kolejnych skryptów
               return caches.open(DYNAMIC_CACHE_VER).then(cache => {
-                cache.add(event.request.url);
+                cache.put(event.request.url, res.clone());
                 return res;
               });
             })
