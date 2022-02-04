@@ -1,7 +1,7 @@
 importScripts('/src/js/idb.js');
 importScripts('/src/js/utility.js');
 
-const STATIC_CACHE_VER = 'static-9';
+const STATIC_CACHE_VER = 'static-12';
 const DYNAMIC_CACHE_VER = 'dynamic-4';
 
 const cacheList = [
@@ -88,6 +88,44 @@ self.addEventListener('fetch', event => {
               });
             });
         }
+      })
+    );
+  }
+});
+
+self.addEventListener('sync', event => {
+  consol.log('[SW] -  background sync');
+  console.log(event.tag);
+
+  if (event.tag === 'sync-new-posts') {
+    console.log('[SW] - sync new post');
+
+    event.waitUntil(
+      readAllData('sync-posts').then(data => {
+        data
+          .forEach(el => {
+            fetch(url, {
+              method: 'POST',
+              headers: {
+                'Content-type': 'application/json',
+                Accept: 'application/json',
+              },
+              body: JSON.stringify({
+                ...el,
+                image:
+                  'https://firebasestorage.googleapis.com/v0/b/pwa-course-1b96b.appspot.com/o/baner_krawcowa_tekst.jpg?alt=media&token=4e46e966-957e-4982-9b25-00ed03d41576',
+              }),
+            }).then(data => {
+              console.log('send data', data);
+            });
+          })
+          .then(res => {
+            console.log('poszło', res);
+            if (res.ok) {
+              deleteItemFromData('sync-posts', el.id);
+            }
+          })
+          .catch(err => console.log(err));
       })
     );
   }

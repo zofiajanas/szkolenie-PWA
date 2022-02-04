@@ -3,6 +3,65 @@ var createPostArea = document.querySelector('#create-post');
 var closeCreatePostModalButton = document.querySelector('#close-create-post-modal-btn');
 var sharedMomentsArea = document.querySelector('#shared-moments');
 
+const form = document.querySelector('form');
+const titleInput = document.querySelector('#title');
+const locationInput = document.querySelector('#location');
+
+const sendData = () => {
+  fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-type': 'application/json',
+      Accept: 'application/json',
+    },
+    body: JSON.stringify({
+      title: titleInput.value,
+      location: locationInput.value,
+      id: new Date().toISOString(),
+      image:
+        'https://firebasestorage.googleapis.com/v0/b/pwa-course-1b96b.appspot.com/o/baner_krawcowa_tekst.jpg?alt=media&token=4e46e966-957e-4982-9b25-00ed03d41576',
+    }),
+  }).then(data => {
+    console.log('send data', data);
+  });
+};
+
+form.addEventListener('submit', event => {
+  event.preventDefault();
+
+  if (titleInput.value.trim() === '' || locationInput.value.trim() === '') {
+    alert('dodaj dane');
+    return;
+  }
+  console.log(titleInput.value, locationInput.value);
+
+  const post = {
+    title: titleInput.value,
+    location: locationInput.value,
+    id: new Date().toISOString(),
+  };
+  if ('serviceWorker' in navigator && 'SyncManager' in window) {
+    navigator.serviceWorker.ready.then(sw => {
+      // przekazujemy id żeby zarejestrować "zadanie" synchroniczne
+
+      writeData('sync-posts', post)
+        .then(() => {
+          return sw.sync.register('sync-new-posts');
+        })
+        .then(() => {
+          const snackbarContainer = document.querySelector('#confirmation-toast');
+          const data = { message: 'dodano do sync-post' };
+          snackbarContainer.MaterialSnackbar.showSnackbar(data);
+        })
+        .catch(err => console.log(err));
+    });
+  } else {
+    // wsparcie dla starszych przeglądarek
+    sendData();
+  }
+  closeCreatePostModal();
+});
+
 function openCreatePostModal() {
   createPostArea.style.display = 'block';
   if (deferredPrompt) {
