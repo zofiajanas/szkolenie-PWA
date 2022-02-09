@@ -62,6 +62,12 @@ form.addEventListener('submit', event => {
   closeCreatePostModal();
 });
 
+let deferredPrompt;
+
+window.addEventListener('beforeinstallprompt', e => {
+  deferredPrompt = e;
+});
+
 function openCreatePostModal() {
   createPostArea.style.display = 'block';
   if (deferredPrompt) {
